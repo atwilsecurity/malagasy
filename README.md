@@ -1,8 +1,8 @@
 # Malagasy
 
-**AI Security Testing Framework** — covers the gaps that existing tools miss: **RAG Security**, **Agent/Tool-Use Testing**, and **Multi-Modal Attacks**.
+**A security testing module for Mongoose AI** — covers the gaps that existing tools miss: **RAG Security**, **Agent/Tool-Use Testing**, and **Multi-Modal Attacks**.
 
-Built to complement frameworks like PyRIT, Garak, NeMo Guardrails, TextAttack, PromptInject, LLM Guard, and Rebuff by targeting attack surfaces they don't cover.
+Malagasy is designed as a module for the Mongoose AI framework, complementing tools like PyRIT, Garak, NeMo Guardrails, TextAttack, PromptInject, LLM Guard, and Rebuff by targeting attack surfaces they don't cover.
 
 ## What It Tests
 
