@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AIProbe output
+aiprobe_results/
+/tmp/aiprobe_images/
+
+# Config with secrets
+aiprobe.yaml
+*.env
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

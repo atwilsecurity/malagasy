@@ -1,0 +1,58 @@
+# AIProbe Configuration
+# Copy this to aiprobe.yaml and fill in your values
+
+llm:
+  provider: azure_openai        # azure_openai | openai | anthropic | custom
+  endpoint: https://your-model.openai.azure.com
+  api_key: your-api-key-here
+  model: gpt-4
+  deployment_name: gpt-4        # Azure-specific
+  api_version: "2024-02-01"     # Azure-specific
+  max_tokens: 4096
+  temperature: 0.0
+  timeout: 60
+
+rag:
+  enabled: true
+  num_poisoning_attempts: 10
+  num_retrieval_probes: 15
+  num_injection_payloads: 20
+  test_indirect_injection: true
+  test_citation_hallucination: true
+  test_context_overflow: true
+
+agent:
+  enabled: true
+  available_tools:
+    - web_search
+    - code_execution
+    - file_read
+    - file_write
+    - database_query
+    - api_call
+    - email_send
+    - calculator
+  function_calling_enabled: true
+  max_tool_calls_per_turn: 5
+  num_escalation_attempts: 10
+  num_hijacking_attempts: 15
+  test_tool_chain_abuse: true
+  test_scope_creep: true
+
+multimodal:
+  enabled: true
+  vision_enabled: true
+  audio_enabled: false
+  num_image_injection_tests: 10
+  num_cross_modal_tests: 10
+  num_steganographic_tests: 5
+  test_ocr_bypass: true
+  generated_image_dir: /tmp/aiprobe_images
+
+# General settings
+output_dir: ./aiprobe_results
+report_format: both            # json | html | both
+verbose: false
+parallel: false
+max_concurrent: 3
+attack_intensity: medium       # low | medium | high
