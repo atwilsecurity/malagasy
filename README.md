@@ -1,4 +1,4 @@
-# AIProbe
+# Malagasy
 
 **AI Security Testing Framework** — covers the gaps that existing tools miss: **RAG Security**, **Agent/Tool-Use Testing**, and **Multi-Modal Attacks**.
 
