@@ -1,6 +1,6 @@
 # Malagasy
 
-**A security testing module for Mongoose AI** — covers the gaps that existing tools miss: **RAG Security**, **Agent/Tool-Use Testing**, and **Multi-Modal Attacks**.
+**A security testing module for Mongoose AI** — covers the gaps that existing tools miss: **RAG Security**, **Agent/Tool-Use Testing**, **Multi-Modal Attacks**, **Unbounded Consumption (OWASP LLM10)**, and **Multi-Turn / Long-Horizon Attacks**. 24 modules across 5 categories.
 
 Malagasy is designed as a module for the Mongoose AI framework, complementing tools like PyRIT, Garak, NeMo Guardrails, TextAttack, PromptInject, LLM Guard, and Rebuff by targeting attack surfaces they don't cover.
 
@@ -25,6 +25,20 @@ Malagasy is designed as a module for the Mongoose AI framework, complementing to
 - **Cross-Modal Exploits** — split instructions across text + image to bypass filters
 - **Steganographic Attacks** — LSB-encoded hidden data in image pixels
 - **OCR Bypass** — rotated text, font obfuscation, adversarial typography
+
+### Consumption (5 modules) — opt-in only
+- **Output Amplification** — prompts engineered to elicit maximum-length output
+- **Token Flooding** — oversized input prompts (10K → 100K tokens) to test gateway caps
+- **Recursive Reasoning** — pathological chain-of-thought loops that consume disproportionate compute
+- **Rate Limit Probe** — concurrent burst to detect missing rate limiting (separately gated, operationally hazardous)
+- **Wallet Drain Simulation** — measures per-call ceiling and projects worst-case attacker hourly cost
+
+### Multi-Turn / Long-Horizon (5 modules)
+- **Crescendo Jailbreak** — gradual escalation across N turns toward a harmful goal (Russinovich et al. 2024)
+- **Refusal Erosion** — same-intent rephrasings that erode an initial refusal
+- **Persona Drift** — exploits that target the model's tendency to soften a constrained persona over many turns
+- **Context Poisoning Chain** — false fact planted in turn 1, built on across turns, exploited at the end
+- **Trust Building Exploit** — sustained benign rapport followed by a harmful final ask
 
 ## Quick Start
 
@@ -112,7 +126,8 @@ Reports are generated in JSON and/or HTML format. The HTML report includes:
 | LLM06: Sensitive Info Disclosure | Retrieval manipulation, context overflow, metadata extraction |
 | LLM07: Insecure Plugin Design | Unauthorized tool use, tool chain abuse |
 | LLM08: Excessive Agency | Privilege escalation, scope creep, agent hijacking |
-| LLM09: Overreliance | Citation hallucination, fabricated sources |
+| LLM09: Overreliance | Citation hallucination, fabricated sources, context poisoning chain |
+| LLM10: Unbounded Consumption | Output amplification, token flooding, recursive reasoning, rate limit probe, wallet drain simulation |
 
 ## Architecture
 
@@ -139,11 +154,23 @@ aiprobe/
     │   ├── tool_chain_abuse.py     # 4 chain abuse patterns
     │   ├── agent_hijacking.py      # 4 hijacking via tool results
     │   └── scope_creep.py          # 4 incremental scope tests
-    └── multimodal/
-        ├── image_injection.py      # 5 image-based injections
-        ├── cross_modal_exploit.py  # 4 cross-modal attacks
-        ├── steganographic_attack.py # 3 steganographic tests
-        └── ocr_bypass.py           # 4 OCR bypass techniques
+    ├── multimodal/
+    │   ├── image_injection.py      # 5 image-based injections
+    │   ├── cross_modal_exploit.py  # 4 cross-modal attacks
+    │   ├── steganographic_attack.py # 3 steganographic tests
+    │   └── ocr_bypass.py           # 4 OCR bypass techniques
+    ├── consumption/                # OWASP LLM10 (opt-in only)
+    │   ├── output_amplification.py # 5 max-output probes
+    │   ├── token_flooding.py       # 3 oversized-input probes
+    │   ├── recursive_reasoning.py  # 3 pathological-CoT probes
+    │   ├── rate_limit_probe.py     # concurrent burst probe (separately gated)
+    │   └── wallet_drain_simulation.py # cost projection, 1 call
+    └── multiturn/
+        ├── crescendo_jailbreak.py     # 3 multi-turn escalations
+        ├── refusal_erosion.py         # 3 same-intent rephrasing tests
+        ├── persona_drift.py           # 3 persona-constraint drift tests
+        ├── context_poisoning_chain.py # 3 false-premise chain tests
+        └── trust_building_exploit.py  # 3 rapport-then-exploit tests
 ```
 
 ## Requirements

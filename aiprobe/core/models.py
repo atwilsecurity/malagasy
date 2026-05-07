@@ -45,6 +45,18 @@ class AttackCategory(str, Enum):
     CROSS_MODAL_EXPLOIT = "cross_modal_exploit"
     STEGANOGRAPHIC_ATTACK = "steganographic_attack"
     OCR_BYPASS = "ocr_bypass"
+    # Consumption (OWASP LLM10)
+    OUTPUT_AMPLIFICATION = "output_amplification"
+    TOKEN_FLOODING = "token_flooding"
+    RECURSIVE_REASONING = "recursive_reasoning"
+    RATE_LIMIT_PROBE = "rate_limit_probe"
+    WALLET_DRAIN_SIMULATION = "wallet_drain_simulation"
+    # Multi-turn / long-horizon
+    CRESCENDO_JAILBREAK = "crescendo_jailbreak"
+    REFUSAL_EROSION = "refusal_erosion"
+    PERSONA_DRIFT = "persona_drift"
+    CONTEXT_POISONING_CHAIN = "context_poisoning_chain"
+    TRUST_BUILDING_EXPLOIT = "trust_building_exploit"
 
 
 class Finding(BaseModel):

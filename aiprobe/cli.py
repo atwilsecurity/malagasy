@@ -46,8 +46,10 @@ def main():
               type=click.Choice(["azure_openai", "openai", "anthropic", "custom"]),
               help="LLM provider")
 @click.option("--model", "-m", default="gpt-4", help="Model name or deployment")
-@click.option("--modules", type=click.Choice(["all", "rag", "agent", "multimodal"]),
-              default="all", help="Test modules to run")
+@click.option("--modules",
+              type=click.Choice(["all", "rag", "agent", "multimodal", "consumption", "multiturn"]),
+              default="all",
+              help="Test modules to run. 'all' excludes 'consumption' (opt-in only).")
 @click.option("--intensity", "-i", type=click.Choice(["low", "medium", "high"]),
               default="medium", help="Attack intensity")
 @click.option("--output", "-o", default="./aiprobe_results", help="Output directory")
@@ -77,16 +79,42 @@ def scan(endpoint, api_key, provider, model, modules, intensity, output, fmt, co
     cfg.report_format = fmt
     cfg.verbose = verbose
 
-    # Enable/disable modules
+    # Enable/disable modules.
+    # 'consumption' is opt-in only — not included in 'all', has to be selected explicitly.
     if modules == "rag":
         cfg.agent.enabled = False
         cfg.multimodal.enabled = False
+        cfg.multiturn.enabled = False
     elif modules == "agent":
         cfg.rag.enabled = False
         cfg.multimodal.enabled = False
+        cfg.multiturn.enabled = False
     elif modules == "multimodal":
         cfg.rag.enabled = False
         cfg.agent.enabled = False
+        cfg.multiturn.enabled = False
+    elif modules == "multiturn":
+        cfg.rag.enabled = False
+        cfg.agent.enabled = False
+        cfg.multimodal.enabled = False
+    elif modules == "consumption":
+        cfg.rag.enabled = False
+        cfg.agent.enabled = False
+        cfg.multimodal.enabled = False
+        cfg.multiturn.enabled = False
+        cfg.consumption.enabled = True
+
+    if cfg.consumption.enabled:
+        cap_dollars = cfg.consumption.max_test_cost_usd
+        rate = cfg.consumption.cost_per_1k_tokens
+        console.print(
+            "\n  [yellow]⚠ CONSUMPTION TESTS ENABLED[/yellow]\n"
+            "  This category sends traffic engineered to consume tokens and "
+            "[bold]costs real money[/bold] during the scan.\n"
+            f"  Cost cap: [cyan]${cap_dollars:.2f}[/cyan] @ [cyan]${rate}/1K tokens[/cyan]. "
+            f"Suite aborts when reached.\n"
+            "  Override via ConsumptionConfig.max_test_cost_usd in your YAML.\n"
+        )
 
     # Validate
     errors = cfg.validate_config()
@@ -148,6 +176,16 @@ def modules():
         ImageInjectionModule, CrossModalExploitModule,
         SteganographicModule, OCRBypassModule,
     )
+    from .modules.consumption import (
+        OutputAmplificationModule, TokenFloodingModule,
+        RecursiveReasoningModule, RateLimitProbeModule,
+        WalletDrainSimulationModule,
+    )
+    from .modules.multiturn import (
+        CrescendoJailbreakModule, RefusalErosionModule,
+        PersonaDriftModule, ContextPoisoningChainModule,
+        TrustBuildingExploitModule,
+    )
 
     all_modules = [
         ("RAG Security", [
@@ -162,6 +200,16 @@ def modules():
             ImageInjectionModule, CrossModalExploitModule,
             SteganographicModule, OCRBypassModule,
         ]),
+        ("Consumption (LLM10, opt-in)", [
+            OutputAmplificationModule, TokenFloodingModule,
+            RecursiveReasoningModule, RateLimitProbeModule,
+            WalletDrainSimulationModule,
+        ]),
+        ("Multi-Turn / Long-Horizon", [
+            CrescendoJailbreakModule, RefusalErosionModule,
+            PersonaDriftModule, ContextPoisoningChainModule,
+            TrustBuildingExploitModule,
+        ]),
     ]
 
     for category, mods in all_modules:
@@ -170,7 +218,8 @@ def modules():
             console.print(f"    [cyan]•[/cyan] {mod.name}")
             console.print(f"      [dim]{mod.description}[/dim]")
 
-    console.print(f"\n  [dim]Total: 14 modules across 3 categories[/dim]\n")
+    total = sum(len(mods) for _, mods in all_modules)
+    console.print(f"\n  [dim]Total: {total} modules across {len(all_modules)} categories[/dim]\n")
 
 
 if __name__ == "__main__":

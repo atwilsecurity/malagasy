@@ -73,6 +73,42 @@ class ProbeEngine:
                 OCRBypassModule(self.client, self.config),
             ])
 
+        if self.config.consumption.enabled:
+            from ..modules.consumption import (
+                OutputAmplificationModule,
+                TokenFloodingModule,
+                RecursiveReasoningModule,
+                RateLimitProbeModule,
+                WalletDrainSimulationModule,
+            )
+            self._modules.extend([
+                OutputAmplificationModule(self.client, self.config),
+                TokenFloodingModule(self.client, self.config),
+                RecursiveReasoningModule(self.client, self.config),
+                RateLimitProbeModule(self.client, self.config),
+                WalletDrainSimulationModule(self.client, self.config),
+            ])
+
+        if self.config.multiturn.enabled:
+            from ..modules.multiturn import (
+                CrescendoJailbreakModule,
+                RefusalErosionModule,
+                PersonaDriftModule,
+                ContextPoisoningChainModule,
+                TrustBuildingExploitModule,
+            )
+            self._modules.extend([
+                CrescendoJailbreakModule(self.client, self.config),
+                RefusalErosionModule(self.client, self.config),
+                PersonaDriftModule(self.client, self.config),
+                ContextPoisoningChainModule(self.client, self.config),
+                TrustBuildingExploitModule(self.client, self.config),
+            ])
+
+    def _estimated_cost_usd(self) -> float:
+        """Rough running cost estimate based on tokens used so far."""
+        return (self.client.total_tokens / 1000.0) * self.config.consumption.cost_per_1k_tokens
+
     def run(self) -> ScanResult:
         """Execute all registered test modules."""
         start = time.time()
@@ -105,6 +141,25 @@ class ProbeEngine:
                 mod_name = module.name
                 progress.update(overall, description=f"[bold]{mod_name}")
                 console.print(f"\n  [bold blue]▸[/bold blue] Running: [white]{mod_name}[/white]")
+
+                # Cost cap check before each consumption module.
+                if module.category == "consumption":
+                    cost = self._estimated_cost_usd()
+                    cap = self.config.consumption.max_test_cost_usd
+                    if cost >= cap:
+                        console.print(
+                            f"    [red]✗ Cost cap reached "
+                            f"(${cost:.2f} ≥ ${cap:.2f}). Skipping {mod_name}.[/red]"
+                        )
+                        skipped = TestResult(
+                            module=mod_name,
+                            category=module.category,
+                            status=TestStatus.SKIPPED,
+                        )
+                        self.scan_result.results.append(skipped)
+                        self.scan_result.modules_run.append(mod_name)
+                        progress.advance(overall)
+                        continue
 
                 try:
                     result = module.run()
